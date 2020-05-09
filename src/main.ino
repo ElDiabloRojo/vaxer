@@ -2,9 +2,9 @@
 #include <PubSubClient.h>
 #include <Pump.h>
 
-const char* ssid = "VM4480283";
-const char* password = "31Freebirds!";
-const char* mqttServer = "192.168.0.220";
+const char* ssid = "SSID";
+const char* password = "PASSWORD";
+const char* mqttServer = "BROKER_IP";
 const int mqttPort = 1883;
 
 const char* message;
