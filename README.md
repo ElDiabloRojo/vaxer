@@ -53,4 +53,4 @@ received.
 
 ## Collaboration
 
-[slack](slack://channel?id=vaxer)
+[slack](https://slack.com/app_redirect?channel=vaxer)
