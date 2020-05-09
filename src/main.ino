@@ -1,6 +1,6 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
-#include <Pump.h>
+#include <HBridge.h>
 
 
 const char* wifiSsid = WIFI_SSID;
@@ -10,7 +10,8 @@ const int mqttBrokerPort = MQTT_BROKER_PORT;
 
 const char* message;
 
-Pump pump(4, 0, 2);
+HBridge aeration(4, 0, 2);
+HBridge water(12, 13, 15);
 
 const int IN1 = 13;
 const int IN2 = 15;
@@ -49,10 +50,10 @@ void readmessage(char message){
       feed();
     break;
     case 'A':
-      pump.on();
+      aeration.forward(1023);
     break;
     case 'O':
-      pump.off();
+      aeration.disable();
     break;
     case 'L':
       lights();
@@ -77,25 +78,19 @@ void feed() {
     Serial.println("feeding");
     Serial.println("water level left to fill: ");
     Serial.print(highLevel - analogRead(liquidLevelPin));
-    analogWrite(ENA, 1023); 
-    digitalWrite(IN1, HIGH);
-    digitalWrite(IN2, LOW);
+    water.forward(1023);
   }
   Serial.println("high watermark reached, emptying");
   while(analogRead(liquidLevelPin) > lowLevel) {
     Serial.println("draining");
     Serial.println("water level remaing: ");
     Serial.print(analogRead(liquidLevelPin) - lowLevel);
-    analogWrite(ENA, 1023); 
-    digitalWrite(IN1, LOW);
-    digitalWrite(IN2, HIGH);
+    water.reverse(1023);
   }
   Serial.println("feed complete");
   Serial.println("water level: ");
   Serial.print(analogRead(liquidLevelPin));
-  analogWrite(ENA, 0); 
-  digitalWrite(IN1, LOW);
-  digitalWrite(IN2, LOW);
+  water.disable();
 }
   
 void setup() {
