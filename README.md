@@ -53,4 +53,4 @@ received.
 
 ## Collaboration
 
-(slack)[slack://channel?id=vaxer]
+[slack](slack://channel?id=vaxer)
