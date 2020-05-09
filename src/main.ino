@@ -2,10 +2,11 @@
 #include <PubSubClient.h>
 #include <Pump.h>
 
-const char* ssid = "VM4480283";
-const char* password = "31Freebirds!";
-const char* mqttServer = "192.168.0.220";
-const int mqttPort = 1883;
+
+const char* wifiSsid = WIFI_SSID;
+const char* wifiPasswd = WIFI_PASSWD;
+const char* mqttBrokerAddr = MQTT_BROKER_IPADDR;
+const int mqttBrokerPort = MQTT_BROKER_PORT;
 
 const char* message;
 
@@ -106,7 +107,7 @@ void setup() {
   pinMode (ENA, OUTPUT);
 
  
-  WiFi.begin(ssid, password);
+  WiFi.begin(wifiSsid, wifiPasswd);
  
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -114,7 +115,7 @@ void setup() {
   }
   Serial.println("Connected to the WiFi network");
  
-  client.setServer(mqttServer, mqttPort);
+  client.setServer(mqttBrokerAddr, mqttBrokerPort);
   client.setCallback(callback);
  
   while (!client.connected()) {

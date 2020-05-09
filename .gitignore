@@ -1,3 +1,6 @@
 .pio
 .pioenvs
 .sconsign.dblite
+.vscode
+
+env.conf
