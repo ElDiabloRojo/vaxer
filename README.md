@@ -50,3 +50,7 @@ received.
 ## Circuit Diagram
 
 ![annotated circuit diagram made with fritzing](./docs/annotated-circuit.png)
+
+## Collaboration
+
+Slack: slack://channel?id=vaxer
