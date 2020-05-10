@@ -1,5 +1,5 @@
 /*
-    HBridge.cpp - Library for Vaxer air HBridge functions
+    HBridge.cpp - Library for Vaxer h bridge functions
     Authored by ElDiabloRojo
 */
 

@@ -1,6 +1,7 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include <HBridge.h>
+#include <Relay.h>
 
 
 const char* wifiSsid = WIFI_SSID;
@@ -10,15 +11,14 @@ const int mqttBrokerPort = MQTT_BROKER_PORT;
 
 const char* message;
 
-HBridge aeration(4, 0, 2);
+HBridge aeration(2, 4, 0);
 HBridge water(12, 13, 15);
+
+Relay planterLight(5);
 
 const int IN1 = 13;
 const int IN2 = 15;
 const int ENA = 12;
-
-const int planterLight = 5;
-int planterState = HIGH;
 
 const int liquidLevelPin = A0;
 int liquid_level;
@@ -50,13 +50,19 @@ void readmessage(char message){
       feed();
     break;
     case 'A':
-      aeration.forward(1023);
+      aeration.reverse(1023);
     break;
     case 'O':
       aeration.disable();
     break;
     case 'L':
-      lights();
+      planterLight.off();
+    break;
+    case 'E':
+      planterLight.on();
+    break;
+    case 'T':
+      planterLight.toggle();
     break;
     default: 
       Serial.println("no message received"); 
@@ -64,27 +70,12 @@ void readmessage(char message){
   }
 }
 
-void lights() {
-  if (planterState == HIGH) {
-    planterState = LOW;
-  } else {
-    planterState = HIGH;
-  }
-  digitalWrite(planterLight, planterState);
-}
-
 void feed() {
   while(analogRead(liquidLevelPin) < highLevel) {
-    Serial.println("feeding");
-    Serial.println("water level left to fill: ");
-    Serial.print(highLevel - analogRead(liquidLevelPin));
     water.forward(1023);
   }
   Serial.println("high watermark reached, emptying");
   while(analogRead(liquidLevelPin) > lowLevel) {
-    Serial.println("draining");
-    Serial.println("water level remaing: ");
-    Serial.print(analogRead(liquidLevelPin) - lowLevel);
     water.reverse(1023);
   }
   Serial.println("feed complete");
@@ -96,7 +87,6 @@ void feed() {
 void setup() {
   Serial.begin(9600);
   pinMode(liquidLevelPin, INPUT);
-  pinMode(planterLight, OUTPUT);
   pinMode (IN1, OUTPUT);
   pinMode (IN2, OUTPUT);
   pinMode (ENA, OUTPUT);
