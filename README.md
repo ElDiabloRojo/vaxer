@@ -49,7 +49,7 @@ received.
 
 ## Circuit Diagram
 
-![annotated circuit diagram made with fritzing](./docs/vaxer.svg)
+![annotated circuit diagram made with fritzing](./docs/vaxer.png)
 
 ## Collaboration
 
