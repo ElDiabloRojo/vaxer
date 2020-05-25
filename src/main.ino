@@ -11,22 +11,21 @@ const int mqttBrokerPort = MQTT_BROKER_PORT;
 
 const char* message;
 
-HBridge aeration(2, 4, 0);
-HBridge water(12, 13, 15);
+const int liquidLevelPin = 15;
+
+HBridge pumpOne(4, 0, 2);
+HBridge pumpTwo(14, 13, 12);
 
 Relay planterLight(5);
 
-const int IN1 = 13;
-const int IN2 = 15;
-const int ENA = 12;
-
-const int liquidLevelPin = A0;
-int liquid_level;
-const int highLevel = 420;
-const int lowLevel = 220;
-
 WiFiClient espClient;
 PubSubClient client(espClient);
+
+int drainDuration;
+int drainTime;
+int feedFillTime;
+int feedStartTime;
+
  
 void callback(char* topic, byte* payload, unsigned int length) {
  
@@ -46,51 +45,40 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
 void readmessage(char message){
   switch(message){
-    case 'F': 
-      feed();
+    case 'Z': 
+      feedStartTime = millis();
+      pumpOne.forward(1023);
     break;
     case 'A':
-      aeration.reverse(1023);
+      pumpOne.forward(1023);
     break;
-    case 'O':
-      aeration.disable();
+    case 'C':
+      pumpOne.disable();
     break;
-    case 'L':
-      planterLight.off();
+    case 'D':
+      pumpTwo.forward(1023);
     break;
-    case 'E':
+    case 'F':
+      pumpTwo.disable();
+    break;
+    case 'G':
+      planterLight.toggle();
+    break;
+    case 'H':
       planterLight.on();
     break;
-    case 'T':
-      planterLight.toggle();
+    case 'I':
+      planterLight.off();
     break;
     default: 
       Serial.println("no message received"); 
     break;
   }
 }
-
-void feed() {
-  while(analogRead(liquidLevelPin) < highLevel) {
-    water.forward(1023);
-  }
-  Serial.println("high watermark reached, emptying");
-  while(analogRead(liquidLevelPin) > lowLevel) {
-    water.reverse(1023);
-  }
-  Serial.println("feed complete");
-  Serial.println("water level: ");
-  Serial.print(analogRead(liquidLevelPin));
-  water.disable();
-}
   
 void setup() {
   Serial.begin(9600);
   pinMode(liquidLevelPin, INPUT);
-  pinMode (IN1, OUTPUT);
-  pinMode (IN2, OUTPUT);
-  pinMode (ENA, OUTPUT);
-
  
   WiFi.begin(wifiSsid, wifiPasswd);
  
@@ -106,7 +94,7 @@ void setup() {
   while (!client.connected()) {
     Serial.println("Connecting to MQTT...");
  
-    if (client.connect("ESP32Client")) {
+    if (client.connect("ESP8266 Client")) {
  
       Serial.println("connected");
  
@@ -115,13 +103,29 @@ void setup() {
       Serial.print("failed with state ");
       Serial.print(client.state());
       delay(2000);
- 
+
     }
   }
  
-  client.subscribe("topic/vaxer");
+  client.subscribe("vaxer/actions");
 }
  
 void loop() {
+  unsigned long currentMillis = millis();
+
   client.loop();
+
+  if (digitalRead(liquidLevelPin) == HIGH) {
+    feedFillTime = currentMillis;
+    pumpOne.disable();
+    pumpTwo.forward(1023);
+    drainDuration = feedFillTime - feedStartTime;
+    drainTime = currentMillis + drainDuration;
+  }
+
+  if (currentMillis >= drainTime) {
+    pumpTwo.disable();
+  }
+
+
 }
